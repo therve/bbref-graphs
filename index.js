@@ -26,7 +26,7 @@
         height = 400
 
     if(table.node().querySelectorAll('tbody tr').length > 60)
-      width = 1200
+      width = 1158
 
     table.style('display', 'none')
 
