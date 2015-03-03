@@ -81,10 +81,18 @@
         .style('float', 'right')
 
       select.selectAll('option')
-          .data(stats)
-      .enter().append('option')
+        .data(stats)
+        .enter().append('option')
         .text(function(d) { return d })
         .attr('selected', function(d) { return d == stat ? 'selected' : null })
+
+      var subSelect = h3.append('select')
+        .style('float', 'right')
+
+      subSelect.selectAll('option')
+        .data(["None"].concat(stats))
+        .enter().append('option')
+        .text(function(d) { return d })
 
       var vis = div.append('svg')
         .attr('class', 'bbref-chart')
@@ -172,6 +180,16 @@
         curData = filterStat(stat, data)
 
         render(curData, stat)
+      })
+
+      subSelect.on('change', function(event) {
+        var statName = this.options[this.selectedIndex].text
+        if (statName == 'None') {
+           return
+        } else {
+           curData = filterStat(statName, data)
+           render(curData, statName)
+        }
       })
 
     } else {
