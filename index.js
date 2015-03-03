@@ -5,7 +5,8 @@
     'mp', 'fg', 'fga', 'fg%', '3p', '3pa', '3p%', 'ft', 'fta', 'ft%','orb',
     'drb', 'trb', 'ast', 'stl', 'blk', 'tov', 'pf', 'pts', 'gmsc', 'ts%',
     'efg%', 'orb%', 'drb%', 'trb%', 'ast%', 'stl%', 'blk%', 'tov%','usg%',
-    'ortg', 'drtg'
+    'ortg', 'drtg', 'g', 'gs', 'ows', 'dws', 'ws', 'ws/48', 'obpm', 'dbpm',
+    'bpm', 'vorp'
   ]
 
   var INFO_TYPES = ['opp', 'date', 'season']
@@ -275,7 +276,7 @@
 
         if(STAT_TYPES.indexOf(label) != -1) {
           // convert minutes played to decimal
-          if(label == 'mp') {
+          if(label == 'mp' && val.indexOf(':') != -1) {
             val = minutesToDecimal(val)
           // Convert percentage decimals to integers
           } else if(label.indexOf('%') != -1) {
@@ -298,7 +299,21 @@
     return data
   }
 
-  var headings = document.querySelectorAll('#basic_div .table_heading, #advanced_div .table_heading, #basic_playoffs_div .table_heading, #advanced_playoffs_div.table_heading, #all_totals .table_heading'),
+  var headings = document.querySelectorAll('#basic_div .table_heading, ' +
+                                           '#advanced_div .table_heading, ' +
+                                           '#basic_playoffs_div .table_heading, ' +
+                                           '#advanced_playoffs_div .table_heading, ' +
+                                           '#all_totals .table_heading, ' +
+                                           '#all_per_game .table_heading, ' +
+                                           '#all_per_minute .table_heading, ' +
+                                           '#all_per_poss .table_heading, ' +
+                                           '#all_advanced .table_heading, ' +
+                                           '#all_playoffs_totals .table_heading, ' +
+                                           '#all_playoffs_per_game .table_heading, ' +
+                                           '#all_playoffs_per_minute .table_heading, ' +
+                                           '#all_playoffs_per_poss .table_heading, ' +
+                                           '#all_playoffs_advanced .table_heading'
+                                           ),
       i = 0,
       len = headings.length
 
