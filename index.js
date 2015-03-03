@@ -26,7 +26,7 @@
         height = 400
 
     if(table.node().querySelectorAll('tbody tr').length > 60)
-      width = 1158
+      width = 1168
 
     table.style('display', 'none')
 
@@ -52,7 +52,7 @@
         .attr('class', 'graph')
         .style('width', width + padl + padr + 'px')
         .style('border', '1px solid #ccc')
-        .style('padding', '0 0 0 10px')
+        .style('padding', '0')
 
       var h3 = div.append('h3')
         .style('padding', '10px')
