@@ -6,7 +6,7 @@
     'drb', 'trb', 'ast', 'stl', 'blk', 'tov', 'pf', 'pts', 'gmsc', 'ts%',
     'efg%', 'orb%', 'drb%', 'trb%', 'ast%', 'stl%', 'blk%', 'tov%','usg%',
     'ortg', 'drtg', 'g', 'gs', 'ows', 'dws', 'ws', 'ws/48', 'obpm', 'dbpm',
-    'bpm', 'vorp'
+    'bpm', 'vorp', 'per', '3par', 'ftr'
   ]
 
   var INFO_TYPES = ['opp', 'date', 'season']
