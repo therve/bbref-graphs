@@ -42,7 +42,7 @@
           xAxis   = d3.svg.axis().scale(x).tickSize(8).tickFormat(function(i) {
             return d3.time.format('%m/%d')(curData[i][1].date) + ' ' + curData[i][1].opp
           }),
-          yAxis   = d3.svg.axis().scale(y).orient("left").tickSize(-width + padl + padr)
+          yAxis   = d3.svg.axis().scale(y).orient("left").tickSize(-width + padl + padr).tickPadding(0)
 
       var path = d3.svg.line()
         .x(function(d, i) { return x(i) + x.rangeBand() / 2 })
