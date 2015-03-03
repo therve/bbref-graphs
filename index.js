@@ -216,7 +216,7 @@
     if (val == '') {
       val = NaN
     } else {
-      if ((/^\./).test(val) || parseFloat(val) == 1) {
+      if ((/^\./).test(val) || val == '1.000') {
         val = parseFloat((parseFloat(val) * 100).toPrecision(3))
       } else {
         val = parseFloat(val)
@@ -235,7 +235,7 @@
         averages.push(averages[averages.length - 1])
       } else {
         total += parseFloat(val)
-        averages.push(parseFloat(d3.format('.1f')(total / (idx + 1))))
+        averages.push(parseFloat(d3.format('.3f')(total / (idx + 1))))
       }
     })
 
