@@ -32,8 +32,7 @@
 
     if(container.select('div.graph').node() == null) {
       var data    = toData(table),
-          player  = d3.select('#info_box p.margin_top span.bold_text').text().split(' '),
-          name    = player[0] + " " + player[player.length - 1],
+          name  = d3.select('#page_content div.freeze_bar ul.menu span.bold_text').text(),
           stats   = d3.keys(data[0]).filter(function(d) { return d != 'info' }),
           padt    = 30, padr = 10, padb = 70, padl = 20,
           stat    = stats.indexOf('pts') != -1 ? 'pts' : 'ortg',
@@ -288,7 +287,7 @@
     return data
   }
 
-  var headings = document.querySelectorAll('#basic_div .table_heading, #advanced_div .table_heading'),
+  var headings = document.querySelectorAll('#basic_div .table_heading, #advanced_div .table_heading, #all_totals .table_heading'),
       i = 0,
       len = headings.length
 
