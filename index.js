@@ -97,7 +97,11 @@
             averages = rollingAverageForStat(entries)
 
         x.domain(d3.range(entries.length))
-        y.domain([0, max * 1.1])
+        if(curstat.indexOf('%') != -1 && max == 100) {
+            y.domain([0, max])
+        } else {
+            y.domain([0, max * 1.1])
+	}
 
         vis.select('.y.axis').call(yAxis)
         vis.select('.x.axis').call(xAxis)
@@ -138,9 +142,6 @@
             .attr('text-anchor', 'start')
             .attr('x', function(d) { return -y(d[0]) + 5 })
             .attr('y', (x.rangeBand() + 2) / 1.5 )
-            //.attr('x', function(d) { return y(d[0]) - 5 })
-          // g.select('text.barlabel')
-          //   .attr('transform', 'translate(')
         } else {
           bargroups.select('text')
             .attr('y', function(d) { return y(d[0]) - 5 })
@@ -170,7 +171,7 @@
   function filterStat(stat, data) {
     return data.map(function(d) {
         return [d[stat], d.info]
-     }).filter(function(d) { return d[0] != undefined && !isNaN(d[0]) })
+     }).filter(function(d) { return d[0] != undefined })
   }
 
   // Hide the chart
@@ -210,7 +211,7 @@
       val = NaN
     } else {
       if((/^\./).test(val) || parseFloat(val) == 1) {
-        val = (parseFloat(val) * 100).toFixed(1)
+        val = parseFloat((parseFloat(val) * 100).toPrecision(3))
       } else {
         val = parseFloat(val)
       }
@@ -224,8 +225,12 @@
         averages = [],
         total    = 0.0
     values.forEach(function(val, idx) {
-      total += parseFloat(val)
-      averages.push(parseFloat(d3.format('.1f')(total / (idx + 1))))
+      if (isNaN(val)) {
+        averages.push(averages[averages.length - 1])
+      } else {
+        total += parseFloat(val)
+        averages.push(parseFloat(d3.format('.1f')(total / (idx + 1))))
+      }
     })
 
     return averages
@@ -287,7 +292,7 @@
     return data
   }
 
-  var headings = document.querySelectorAll('#basic_div .table_heading, #advanced_div .table_heading, #all_totals .table_heading'),
+  var headings = document.querySelectorAll('#basic_div .table_heading, #advanced_div .table_heading, #basic_playoffs_div .table_heading, #advanced_playoffs_div.table_heading, #all_totals .table_heading'),
       i = 0,
       len = headings.length
 
