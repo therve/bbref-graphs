@@ -94,13 +94,14 @@
 
       function render(entries, curstat) {
         var max = d3.max(entries, function(d) { return d[0] }),
+            min = d3.min(entries, function(d) { return d[0] }),
             averages = rollingAverageForStat(entries)
 
         x.domain(d3.range(entries.length))
         if(curstat.indexOf('%') != -1 && max == 100) {
-            y.domain([0, max])
+            y.domain([Math.min(0, min), max])
         } else {
-            y.domain([0, max * 1.1])
+            y.domain([Math.min(0, min), max * 1.1])
 	}
 
         vis.select('.y.axis').call(yAxis)
