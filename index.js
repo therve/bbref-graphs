@@ -36,7 +36,7 @@
           name  = d3.select('#page_content div.freeze_bar ul.menu span.bold_text').text(),
           stats   = d3.keys(data[0]).filter(function(d) { return d != 'info' }),
           padt    = 30, padr = 10, padb = 70, padl = 20,
-          stat    = stats.indexOf('pts') != -1 ? 'pts' : 'ortg',
+          stat    = stats.indexOf('pts') != -1 ? 'pts' : 'mp',
           curData = filterStat(stat, data),
           x       = d3.scale.ordinal().rangeRoundBands([0, width], 0.2),
           y       = d3.scale.linear().range([height, 0]),
