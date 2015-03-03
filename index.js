@@ -8,7 +8,7 @@
     'ortg', 'drtg'
   ]
 
-  var INFO_TYPES = ['opp', 'date']
+  var INFO_TYPES = ['opp', 'date', 'season']
 
   // Helper for use in event bindings
   var bind = function(func, context) {
@@ -40,7 +40,11 @@
           x       = d3.scale.ordinal().rangeRoundBands([0, width], 0.2),
           y       = d3.scale.linear().range([height, 0]),
           xAxis   = d3.svg.axis().scale(x).tickSize(8).tickFormat(function(i) {
-            return d3.time.format('%m/%d')(curData[i][1].date) + ' ' + curData[i][1].opp
+            if (curData[i][1].date != undefined) {
+              return d3.time.format('%m/%d')(curData[i][1].date) + ' ' + curData[i][1].opp
+            } else {
+              return curData[i][1].season
+            }
           }),
           yAxis   = d3.svg.axis().scale(y).orient("left").tickSize(-width + padl + padr).tickPadding(0)
 
@@ -48,7 +52,7 @@
         .x(function(d, i) { return x(i) + x.rangeBand() / 2 })
         .y(function(d) { return y(d) })
 
-      var div = container.append('div')
+      var div = container.insert('div', '.margin.padding')
         .attr('class', 'graph')
         .style('width', width + padl + padr + 'px')
         .style('border', '1px solid #ccc')
@@ -248,7 +252,8 @@
         data    = []
 
     headers.each(function(el, idx) {
-      if(this.innerText.toLowerCase() == 'date')
+      var lbl = this.innerText.toLowerCase();
+      if(lbl == 'date' || lbl == 'season')
         dateidx = idx + 1
     })
 
