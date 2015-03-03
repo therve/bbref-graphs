@@ -26,12 +26,12 @@
     var width = table.node().offsetWidth,
         height = 400
 
-    if(table.node().querySelectorAll('tbody tr').length > 60)
+    if (table.node().querySelectorAll('tbody tr').length > 60)
       width = 1168
 
     table.style('display', 'none')
 
-    if(container.select('div.graph').node() == null) {
+    if (container.select('div.graph').node() == null) {
       var data    = toData(table),
           name  = d3.select('#page_content div.freeze_bar ul.menu span.bold_text').text(),
           stats   = d3.keys(data[0]).filter(function(d) { return d != 'info' }),
@@ -103,7 +103,7 @@
             averages = rollingAverageForStat(entries)
 
         x.domain(d3.range(entries.length))
-        if(curstat.indexOf('%') != -1 && max == 100) {
+        if (curstat.indexOf('%') != -1 && max == 100) {
             y.domain([Math.min(0, min), max])
         } else {
             y.domain([Math.min(0, min), max * 1.1])
@@ -139,10 +139,10 @@
         bargroups.select('text')
           .text(function(d) { return d[0] })
           .style('display', function(d) {
-            if(isNaN(d[0])) return 'none'
+            if (isNaN(d[0])) return 'none'
           })
 
-        if(entries.length > 40) {
+        if (entries.length > 40) {
           bargroups.select('text')
             .attr('transform', 'rotate(-90)')
             .attr('text-anchor', 'start')
@@ -198,7 +198,7 @@
     var container = d3.select(this.parentNode),
         table     = container.select('.stats_table')
 
-    if(table.style('display') == 'none') {
+    if (table.style('display') == 'none') {
       hideChart.apply(this, [container, table, event])
       link.innerText = 'Chart'
     } else {
@@ -213,10 +213,10 @@
   }
 
   function percentageToNumber(val) {
-    if(val == '') {
+    if (val == '') {
       val = NaN
     } else {
-      if((/^\./).test(val) || parseFloat(val) == 1) {
+      if ((/^\./).test(val) || parseFloat(val) == 1) {
         val = parseFloat((parseFloat(val) * 100).toPrecision(3))
       } else {
         val = parseFloat(val)
@@ -254,12 +254,12 @@
 
     headers.each(function(el, idx) {
       var lbl = this.innerText.toLowerCase();
-      if(lbl == 'date' || lbl == 'season')
+      if (lbl == 'date' || lbl == 'season')
         dateidx = idx + 1
     })
 
     // We want to have dates before we decide to continue
-    if(!dateidx) {
+    if (!dateidx) {
       return console.log('No Date found in table')
     }
 
@@ -274,12 +274,12 @@
         var label = labels[idx],
             val = this.innerText
 
-        if(STAT_TYPES.indexOf(label) != -1) {
+        if (STAT_TYPES.indexOf(label) != -1) {
           // convert minutes played to decimal
-          if(label == 'mp' && val.indexOf(':') != -1) {
+          if (label == 'mp' && val.indexOf(':') != -1) {
             val = minutesToDecimal(val)
           // Convert percentage decimals to integers
-          } else if(label.indexOf('%') != -1) {
+          } else if (label.indexOf('%') != -1) {
             val = percentageToNumber(val)
           // Floats strings to floats and number strings to numbers
           } else {
@@ -287,9 +287,9 @@
           }
 
           obj[label] = val
-        } else if(INFO_TYPES.indexOf(label) != -1) {
-          if(typeof obj.info == "undefined") obj.info = {}
-          if(label == 'date') val = format.parse(val)
+        } else if (INFO_TYPES.indexOf(label) != -1) {
+          if (typeof obj.info == "undefined") obj.info = {}
+          if (label == 'date') val = format.parse(val)
           obj.info[label] = val
         }
       })
@@ -317,7 +317,7 @@
       i = 0,
       len = headings.length
 
-  for(i; i < len; i++) {
+  for (i; i < len; i++) {
     var heading = headings[i]
         a = document.createElement('a')
 
