@@ -6,7 +6,13 @@
     'drb', 'trb', 'ast', 'stl', 'blk', 'tov', 'pf', 'pts', 'gmsc', 'ts%',
     'efg%', 'orb%', 'drb%', 'trb%', 'ast%', 'stl%', 'blk%', 'tov%','usg%',
     'ortg', 'drtg', 'g', 'gs', 'ows', 'dws', 'ws', 'ws/48', 'obpm', 'dbpm',
-    'bpm', 'vorp', 'per', '3par', 'ftr'
+    'bpm', 'vorp', 'per', '3par', 'ftr',
+    // Shooting stats
+    'fg_pct', 'avg_dist', 'fg2a_pct_fga', 'pct_fga_00_03', 'pct_fga_03_10',
+    'pct_fga_10_16', 'pct_fga_16_XX', 'fg3a_pct_fga', 'fg2_pct', 'fg_pct_00_03',
+    'fg_pct_03_10', 'fg_pct_10_16', 'fg_pct_16_XX', 'fg3_pct', 'fg2_pct_ast',
+    'pct_fg2_dunk', 'fg2_dunk', 'fg3_pct_ast', 'pct_fg3a_corner', 'fg3_pct_corner',
+    'fg3a_heave', 'fg3_heave'
   ]
 
   var INFO_TYPES = ['opp', 'date', 'season']
@@ -107,7 +113,7 @@
             y.domain([Math.min(0, min), max])
         } else {
             y.domain([Math.min(0, min), max * 1.1])
-	}
+        }
 
         vis.select('.y.axis').call(yAxis)
         vis.select('.x.axis').call(xAxis)
@@ -247,8 +253,9 @@
   //
   // Returns an array or games [{game}, {game}, ...]
   function toData(table) {
+    var multiHeader = table.selectAll('thead tr')[0].length > 1;
     var dateidx = null,
-        headers = table.selectAll('thead th'),
+        headers = table.selectAll('thead tr:not(.over_header) th'),
         rows    = table.selectAll('tbody tr'),
         data    = []
 
@@ -265,7 +272,13 @@
 
     // Get the stat labels
     var labels = headers.map(function(hdrs) {
-      return hdrs.map(function(hdr) { return hdr.innerText.toLowerCase() })
+      return hdrs.map(function(hdr) {
+        if (multiHeader) {
+           return hdr.getAttribute('data-stat')
+        } else {
+           return hdr.innerText.toLowerCase()
+        }
+      })
     })[0]
 
     rows.each(function() {
@@ -308,6 +321,7 @@
                                            '#all_per_minute .table_heading, ' +
                                            '#all_per_poss .table_heading, ' +
                                            '#all_advanced .table_heading, ' +
+                                           '#all_shooting .table_heading, ' +
                                            '#all_playoffs_totals .table_heading, ' +
                                            '#all_playoffs_per_game .table_heading, ' +
                                            '#all_playoffs_per_minute .table_heading, ' +
