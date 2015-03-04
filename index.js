@@ -390,6 +390,16 @@
     return data
   }
 
+  var query = window.location.search.substring(1)
+  var vars = query.split('&')
+  var activatedCharts = []
+  vars.forEach(function(queryVar) {
+    var pair = queryVar.split('=')
+    if (decodeURIComponent(pair[0]) == 'chart') {
+      activatedCharts.push(decodeURIComponent(pair[1]))
+    }
+  })
+
   var divList = [
     '#basic_div', '#advanced_div', '#basic_playoffs_div',
     '#advanced_playoffs_div', '#all_totals', '#all_per_game', '#all_per_minute',
@@ -407,6 +417,9 @@
     a.className = 'bbref-chart-link'
     a.addEventListener('click', bind(onChartLinkClick, heading, a))
     heading.appendChild(a)
+    if (activatedCharts.indexOf(heading.parentNode.getAttribute('id')) != -1 ){
+      a.click();
+    }
   }
 
 })()
