@@ -30,8 +30,8 @@ svg.bbref-chart rect.chart1 {
 }
 
 svg.bbref-chart rect.chart2 {
-  fill: red;
-  stroke: red;
+  fill: blue;
+  stroke: blue;
 }
 
 svg.bbref-chart g.bar:hover rect {
@@ -80,7 +80,7 @@ svg.bbref-chart .average.chart1 {
 }
 
 svg.bbref-chart .average.chart2 {
-  stroke: red;
+  stroke: blue;
 }
 
 .graph h3 .stat-label {
