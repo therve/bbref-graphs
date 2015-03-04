@@ -390,29 +390,18 @@
     return data
   }
 
-  var headings = document.querySelectorAll('#basic_div .table_heading, ' +
-                                           '#advanced_div .table_heading, ' +
-                                           '#basic_playoffs_div .table_heading, ' +
-                                           '#advanced_playoffs_div .table_heading, ' +
-                                           '#all_totals .table_heading, ' +
-                                           '#all_per_game .table_heading, ' +
-                                           '#all_per_minute .table_heading, ' +
-                                           '#all_per_poss .table_heading, ' +
-                                           '#all_advanced .table_heading, ' +
-                                           '#all_shooting .table_heading, ' +
-                                           '#all_playoffs_totals .table_heading, ' +
-                                           '#all_playoffs_per_game .table_heading, ' +
-                                           '#all_playoffs_per_minute .table_heading, ' +
-                                           '#all_playoffs_per_poss .table_heading, ' +
-                                           '#all_playoffs_advanced .table_heading'
-                                           ),
-      i = 0,
-      len = headings.length
-
-  for (i; i < len; i++) {
-    var heading = headings[i]
+  var divList = [
+    '#basic_div', '#advanced_div', '#basic_playoffs_div',
+    '#advanced_playoffs_div', '#all_totals', '#all_per_game', '#all_per_minute',
+    '#all_per_poss', '#all_advanced', '#all_shooting', '#all_playoffs_totals',
+    '#all_playoffs_per_game', '#all_playoffs_per_minute', '#all_playoffs_per_poss',
+    '#all_playoffs_advanced'
+  ]
+  var selector = divList.map(function(x) { return x + ' .table_heading'}).join(', ')
+  var headings = document.querySelectorAll(selector)
+  for (var i = 0; i < headings.length; i++) {
+    var heading = headings[i],
         a = document.createElement('a')
-
     a.innerText = 'Chart'
     a.href = '#chart'
     a.className = 'bbref-chart-link'
