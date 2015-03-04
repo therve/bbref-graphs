@@ -16,6 +16,8 @@
   ]
 
   var INFO_TYPES = ['opp', 'date', 'season']
+ 
+  var NO_KEY = '----'
 
   // Helper for use in event bindings
   var bind = function(func, context) {
@@ -38,26 +40,32 @@
     table.style('display', 'none')
 
     if (container.select('div.graph').node() == null) {
-      var data    = toData(table),
-          name  = d3.select('#page_content div.freeze_bar ul.menu span.bold_text').text(),
-          stats   = d3.keys(data[0]).filter(function(d) { return d != 'info' }),
-          padt    = 30, padr = 10, padb = 70, padl = 20,
-          stat    = stats.indexOf('pts') != -1 ? 'pts' : 'mp',
-          curData = filterStat(stat, data),
-          x       = d3.scale.ordinal().rangeRoundBands([0, width], 0.2),
-          y       = d3.scale.linear().range([height, 0]),
-          xAxis   = d3.svg.axis().scale(x).tickSize(8).tickFormat(function(i) {
-            if (curData[i][1].date != undefined) {
-              return d3.time.format('%m/%d')(curData[i][1].date) + ' ' + curData[i][1].opp
+      var data = toData(table),
+          name = d3.select('#page_content div.freeze_bar ul.menu span.bold_text').text(),
+          stats = d3.keys(data[0]).filter(function(d) { return d != 'info' }),
+          padt = 30, padr = 10, padb = 70, padl = 20,
+          statKeys = [stats.indexOf('pts') != -1 ? 'pts' : 'mp', NO_KEY],
+          curData = filterStats([statKeys[0]], data),
+          x = d3.scale.ordinal().rangeRoundBands([0, width], 0.2),
+          ys = [d3.scale.linear().range([height, 0]),
+                d3.scale.linear().range([height, 0])],
+          xAxis = d3.svg.axis().scale(x).tickSize(8).tickFormat(function(i) {
+            if (curData[i][0].date != undefined) {
+              return d3.time.format('%m/%d')(curData[i][0].date) + ' ' + curData[i][0].opp
             } else {
-              return curData[i][1].season
+              return curData[i][0].season
             }
           }),
-          yAxis   = d3.svg.axis().scale(y).orient("left").tickSize(-width + padl + padr).tickPadding(0)
+          yAxes  = [d3.svg.axis().scale(ys[0]).orient("left").tickSize(-width + padl + padr).tickPadding(0),
+                    d3.svg.axis().scale(ys[1]).orient("right").tickSize(-width + padl + padr).tickPadding(0)]
 
-      var path = d3.svg.line()
+      var paths = [
+        d3.svg.line()
         .x(function(d, i) { return x(i) + x.rangeBand() / 2 })
-        .y(function(d) { return y(d) })
+        .y(function(d) { return ys[0](d) }),
+        d3.svg.line()
+        .x(function(d, i) { return x(i) + x.rangeBand() / 2 })
+        .y(function(d) { return ys[1](d) })]
 
       var div = container.insert('div', '.margin.padding')
         .attr('class', 'graph')
@@ -77,6 +85,20 @@
       var subject = h3.append('span')
         .attr('class', 'subject')
 
+      var subSelect = h3.append('select')
+        .style('float', 'right')
+
+      subSelect.selectAll('option')
+        .data(["----"].concat(stats))
+        .enter().append('option')
+        .text(function(d) { return d })
+        .attr('selected', function(d) { return d == statKeys[1] ? 'selected' : null })
+
+      h3.append('span')
+        .attr('class', 'stat-label')
+        .style('float', 'right')
+        .text('Second stat:')
+
       var select = h3.append('select')
         .style('float', 'right')
 
@@ -84,15 +106,12 @@
         .data(stats)
         .enter().append('option')
         .text(function(d) { return d })
-        .attr('selected', function(d) { return d == stat ? 'selected' : null })
+        .attr('selected', function(d) { return d == statKeys[0] ? 'selected' : null })
 
-      var subSelect = h3.append('select')
+      h3.append('span')
+        .attr('class', 'stat-label')
         .style('float', 'right')
-
-      subSelect.selectAll('option')
-        .data(["None"].concat(stats))
-        .enter().append('option')
-        .text(function(d) { return d })
+        .text('First stat:')
 
       var vis = div.append('svg')
         .attr('class', 'bbref-chart')
@@ -109,27 +128,20 @@
         .attr('transform', 'translate(0,' + height + ')')
 
       vis.append('path')
-        .attr('class', 'average')
+        .attr('class', 'average chart1')
+      vis.append('path')
+        .attr('class', 'average chart2')
 
-      function render(entries, curstat) {
-        var max = d3.max(entries, function(d) { return d[0] }),
-            min = d3.min(entries, function(d) { return d[0] }),
-            averages = rollingAverageForStat(entries)
+      function render(stats, entries) {
 
         x.domain(d3.range(entries.length))
-        if (curstat.indexOf('%') != -1 && max == 100) {
-            y.domain([Math.min(0, min), max])
-        } else {
-            y.domain([Math.min(0, min), max * 1.1])
-        }
-
-        vis.select('.y.axis').call(yAxis)
         vis.select('.x.axis').call(xAxis)
         vis.selectAll('.x.axis text')
           .attr('transform', 'translate(' + -((x.rangeBand() / 2) + 10) + ',30), rotate(-65)')
           .attr('text-anchor', 'end')
-
-        subject.text(stat.toUpperCase())
+        subject.text(stats[0].toUpperCase())
+        vis.selectAll('g.bar').remove()
+        vis.selectAll('path.average').style('display', 'None')
 
         var bargroups = vis.selectAll('g.bar')
           .data(entries)
@@ -138,57 +150,84 @@
           .attr('class', 'bar')
           .attr('transform', function(d, i) { return 'translate(' + x(i) + ',0)'})
 
-        rect = g.append('rect')
-          .attr('width', x.rangeBand())
+        stats.forEach(function(stat, idx) {
+          idx = idx + 1
 
-        g.append('text')
-          .attr('class', 'barlabel')
-          .attr('text-anchor', 'middle')
-          .attr('x', x.rangeBand() / 2)
+          var max = d3.max(entries, function(d) { return d[idx] }),
+              min = d3.min(entries, function(d) { return d[idx] })
+              y = ys[idx - 1],
+              yAxis = yAxes[idx - 1],
+              averages = rollingAverageForStat(entries, idx)
 
-        bargroups.select('rect')
-          .attr('height', function(d) { return height - y(d[0])})
-          .attr('y', function(d) { return y(d[0]) })
+          if (stat.indexOf('%') != -1 && max == 100) {
+              y.domain([Math.min(0, min), max])
+          } else {
+              y.domain([Math.min(0, min), max * 1.1])
+          }
+          vis.select('.y.axis').call(yAxis)
 
-        bargroups.select('text')
-          .text(function(d) { return d[0] })
-          .style('display', function(d) {
-            if (isNaN(d[0])) return 'none'
-          })
+          rect = g.append('rect')
+            .attr('class', 'chart' + idx)
+            .attr('width', x.rangeBand() / stats.length)
+            .attr('x', x.rangeBand() * (idx - 1) / 2)
 
-        if (entries.length > 40) {
-          bargroups.select('text')
-            .attr('transform', 'rotate(-90)')
-            .attr('text-anchor', 'start')
-            .attr('x', function(d) { return -y(d[0]) + 5 })
-            .attr('y', (x.rangeBand() + 2) / 1.5 )
-        } else {
-          bargroups.select('text')
-            .attr('y', function(d) { return y(d[0]) - 5 })
-        }
+          g.append('text')
+            .attr('class', 'barlabel chart' + idx)
+            .attr('text-anchor', 'middle')
+            .attr('x', x.rangeBand() / 2)
 
-        vis.select('path.average')
-          .attr('d', path(averages))
+          bargroups.select('rect.chart' + idx)
+            .attr('height', bind(function(d) { return isNaN(y(d[idx])) ? 0 : height - y(d[idx])}))
+            .attr('y', bind(function(d) { return isNaN(y(d[idx])) ? 0 : y(d[idx]) }))
+
+          bargroups.select('text.chart' + idx)
+            .text(function(d) { return d[idx] })
+            .style('display', bind(function(d) {
+              if (isNaN(d[idx])) return 'none'
+            }))
+
+          if (entries.length > 40) {
+            bargroups.select('text.chart'+ idx)
+              .attr('transform', 'rotate(-90)')
+              .attr('text-anchor', 'start')
+              .attr('x', bind(function(d) { return isNaN(y(d[idx])) ? 0 : -y(d[idx]) + 5 }))
+              .attr('y', (x.rangeBand() * (idx) / 2 + 2) / 1.5 )
+          } else {
+            bargroups.select('text.chart' + idx)
+              .attr('y', bind(function(d) { return isNaN(y(d[idx])) ? 0 : y(d[idx]) - 5 }))
+          }
+
+          vis.select('path.average.chart' + idx)
+            .attr('d', paths[idx - 1](averages))
+            .style('display', '')
+        })
+
 
         bargroups.exit().remove()
       }
 
-      render(curData, stat)
+      render([statKeys[0]], curData)
 
       select.on('change', function(event) {
-        stat = this.options[this.selectedIndex].text
-        curData = filterStat(stat, data)
+        statKeys[0] = this.options[this.selectedIndex].text
+        var stats = [statKeys[0]]
+        if (statKeys[1] != NO_KEY) {
+           stats.push(statKeys[1])
+        }
+        curData = filterStats(stats, data)
 
-        render(curData, stat)
+        render(stats, curData)
       })
 
       subSelect.on('change', function(event) {
-        var statName = this.options[this.selectedIndex].text
-        if (statName == 'None') {
-           return
+        statKeys[1] = this.options[this.selectedIndex].text
+        if (statKeys[1] != NO_KEY) {
+           curData = filterStats(statKeys, data)
+           render(statKeys, curData)
         } else {
-           curData = filterStat(statName, data)
-           render(curData, statName)
+           var stats = [statKeys[0]]
+           curData = filterStats(stats, data)
+           render(stats, curData)
         }
       })
 
@@ -198,9 +237,23 @@
     }
   }
 
-  function filterStat(stat, data) {
+  function filterStats(stats, data) {
     return data.map(function(d) {
-        return [d[stat], d.info]
+        var result = []
+        var hasValue = false
+        stats.forEach(function(stat) {
+           if (d[stat] == undefined) {
+             result.push(NaN)
+           } else {
+             result.push(d[stat])
+             hasValue = true
+           }
+        })
+        if (hasValue) {
+           return [d.info].concat(result)
+        } else {
+           return [undefined]
+        }
      }).filter(function(d) { return d[0] != undefined })
   }
 
@@ -220,7 +273,7 @@
   function onChartLinkClick(link, event) {
     event.preventDefault()
     var container = d3.select(this.parentNode),
-        table     = container.select('.stats_table')
+        table = container.select('.stats_table')
 
     if (table.style('display') == 'none') {
       hideChart.apply(this, [container, table, event])
@@ -250,8 +303,8 @@
     return val
   }
 
-  function rollingAverageForStat(entries) {
-    var values = entries.map(function(d) { return d[0] }),
+  function rollingAverageForStat(entries, idx) {
+    var values = entries.map(function(d) { return d[idx] }),
         averages = [],
         total    = 0.0
     values.forEach(function(val, idx) {

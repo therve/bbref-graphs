@@ -19,11 +19,19 @@ a.bbref-chart-link[href]:before {
 }
 
 svg.bbref-chart g.bar rect {
-  fill: green;
   fill-opacity: 0.5;
-  stroke: green;
   stroke-width: 1px;
   shape-rendering: crispEdges;
+}
+
+svg.bbref-chart rect.chart1 {
+  fill: green;
+  stroke: green;
+}
+
+svg.bbref-chart rect.chart2 {
+  fill: red;
+  stroke: red;
 }
 
 svg.bbref-chart g.bar:hover rect {
@@ -65,5 +73,16 @@ svg.bbref-chart .average {
   fill: none;
   stroke-width: 2px;
   stroke-dasharray: 6 2;
-  stroke: #1E90FF;
+}
+
+svg.bbref-chart .average.chart1 {
+  stroke: green;
+}
+
+svg.bbref-chart .average.chart2 {
+  stroke: red;
+}
+
+.graph h3 .stat-label {
+   margin: 0 10px;
 }
