@@ -143,7 +143,7 @@
         vis.selectAll('.x.axis text')
           .attr('transform', 'translate(' + -((x.rangeBand() / 2) + 10) + ',30), rotate(-65)')
           .attr('text-anchor', 'end')
-        subject.text(stats[0].toUpperCase())
+        subject.text(stats.join(" / ").toUpperCase())
         vis.selectAll('g.bar').remove()
         vis.selectAll('path.average').style('display', 'None')
         vis.selectAll('.y.axis').style('display', 'None')
