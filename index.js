@@ -198,7 +198,7 @@
               .attr('transform', 'rotate(-90)')
               .attr('text-anchor', 'start')
               .attr('x', bind(function(d) { return isNaN(y(d[idx])) ? 0 : -y(d[idx]) + 5 }))
-              .attr('y', (x.rangeBand() + 2 * stats.length) / (1.5 * stats.length) + x.rangeBand() * (idx -1) / 2 )
+              .attr('y', (x.rangeBand() + stats.length) / (1.5 * stats.length) + x.rangeBand() * (idx -1) / 2 + 2 * idx)
           } else {
             bargroups.select('text.chart' + idx)
               .attr('y', bind(function(d) { return isNaN(y(d[idx])) ? 0 : y(d[idx]) - 5 }))
