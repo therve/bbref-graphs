@@ -16,7 +16,7 @@
   ]
 
   var INFO_TYPES = ['opp', 'date', 'season']
- 
+
   var NO_KEY = '----'
 
   // Helper for use in event bindings
@@ -57,7 +57,7 @@
             }
           }),
           yAxes  = [d3.svg.axis().scale(ys[0]).orient("left").tickSize(-width + padl + padr).tickPadding(0),
-                    d3.svg.axis().scale(ys[1]).orient("right").tickSize(-width + padl + padr).tickPadding(0)]
+                    d3.svg.axis().scale(ys[1]).orient("right").tickSize(5).tickPadding(0)]
 
       var paths = [
         d3.svg.line()
@@ -121,7 +121,11 @@
         .attr('transform', 'translate(' + padl + ',' + padt + ')')
 
       vis.append("g")
-        .attr("class", "y axis")
+        .attr("class", "y axis chart1")
+
+      vis.append("g")
+        .attr("class", "y axis chart2")
+        .attr('transform', 'translate(' + (width - 15) + ', 0)')
 
       vis.append('g')
         .attr('class', 'x axis')
@@ -164,7 +168,7 @@
           } else {
               y.domain([Math.min(0, min), max * 1.1])
           }
-          vis.select('.y.axis').call(yAxis)
+          vis.select('.y.axis.chart' + idx).call(yAxis)
 
           rect = g.append('rect')
             .attr('class', 'chart' + idx)
