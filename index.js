@@ -181,7 +181,7 @@
           g.append('text')
             .attr('class', 'barlabel chart' + idx)
             .attr('text-anchor', 'middle')
-            .attr('x', x.rangeBand() / 2)
+            .attr('x', x.rangeBand() * ((idx - 1) * 2 + 1) / (2 * stats.length))
 
           bargroups.select('rect.chart' + idx)
             .attr('height', bind(function(d) { return isNaN(y(d[idx])) ? 0 : height - y(d[idx])}))
