@@ -24,6 +24,17 @@
     return Function.prototype.bind.apply(func, [].slice.call(arguments, 1))
   }
 
+var players = new Bloodhound({
+  datumTokenizer: Bloodhound.tokenizers.obj.whitespace('v'),
+  queryTokenizer: Bloodhound.tokenizers.whitespace,
+  limit: 10,
+  prefetch: {
+    url: '/inc/players_search_list.json',
+  }
+});
+
+players.initialize();
+
   var format = d3.time.format('%Y-%m-%d')
 
   // Build or show the chart
@@ -32,7 +43,8 @@
   // table     - The statistics table
   function showChart(container, table) {
     var width = table.node().offsetWidth,
-        height = 400
+        height = 400,
+        containerId = container.attr('id')
 
     if (table.node().querySelectorAll('tbody tr').length > 60)
       width = 1168
@@ -56,8 +68,8 @@
               return curData[i][0].season
             }
           }),
-          yAxes  = [d3.svg.axis().scale(ys[0]).orient("left").tickSize(-width + padl + padr).tickPadding(0),
-                    d3.svg.axis().scale(ys[1]).orient("right").tickSize(5).tickPadding(0)]
+          yAxes  = [d3.svg.axis().scale(ys[0]).orient('left').tickSize(-width + padl + padr).tickPadding(0),
+                    d3.svg.axis().scale(ys[1]).orient('right').tickSize(5).tickPadding(0)]
 
       var paths = [
         d3.svg.line()
@@ -80,16 +92,42 @@
 
       h3.append('span')
         .attr('class', 'player')
-        .text(name + ": ")
+        .text(name + ': ')
 
       var subject = h3.append('span')
         .attr('class', 'subject')
+
+      if (curData[0][0].season != undefined) {
+        h3.append('input')
+          .attr('type', 'text')
+          .attr('class', 'graph-typeahead')
+          .attr('placeholder', 'Compare')
+        .style('float', 'right')
+
+        var th = $('.graph-typeahead').typeahead(null, {
+           name: 'player',
+           displayKey: 'v',
+           source: players.ttAdapter()
+        })
+        th.bind('typeahead:selected', function(evt, obj) {
+           var url = '/players/' + obj.i[0] + '/' + obj.i + '.html'
+           $.ajax({
+             url: url,
+             success: function(pageData) {
+                var other = $('<div/>').append(pageData).find('#' + containerId + ' .table_heading').get(0).parentNode
+                var otherData = toData(d3.select(other))
+                var combinedEntries = combineData(statKeys[0], data, otherData)
+                render([statKeys[0], statKeys[0]], combinedEntries)
+             }
+           })
+        })
+      }
 
       var subSelect = h3.append('select')
         .style('float', 'right')
 
       subSelect.selectAll('option')
-        .data(["----"].concat(stats))
+        .data([NO_KEY].concat(stats))
         .enter().append('option')
         .text(function(d) { return d })
         .attr('selected', function(d) { return d == statKeys[1] ? 'selected' : null })
@@ -120,11 +158,11 @@
       .append('g')
         .attr('transform', 'translate(' + padl + ',' + padt + ')')
 
-      vis.append("g")
-        .attr("class", "y axis chart1")
+      vis.append('g')
+        .attr('class', 'y axis chart1')
 
-      vis.append("g")
-        .attr("class", "y axis chart2")
+      vis.append('g')
+        .attr('class', 'y axis chart2')
         .attr('transform', 'translate(' + (width - 15) + ', 0)')
 
       vis.append('g')
@@ -143,7 +181,7 @@
         vis.selectAll('.x.axis text')
           .attr('transform', 'translate(' + -((x.rangeBand() / 2) + 10) + ',30), rotate(-65)')
           .attr('text-anchor', 'end')
-        subject.text(stats.join(" / ").toUpperCase())
+        subject.text(stats.join(' / ').toUpperCase())
         vis.selectAll('g.bar').remove()
         vis.selectAll('path.average').style('display', 'None')
         vis.selectAll('.y.axis').style('display', 'None')
@@ -244,6 +282,14 @@
     }
   }
 
+  function combineData(stat, data, otherData) {
+    var dataDate = dataByDate(otherData)
+    return data.map(function(d, idx) {
+        var other = dataDate[cleanSeason(d.info.season)]
+        return [d.info, d[stat], other != undefined ? other[stat] : NaN]
+    })
+  }
+
   function filterStats(stats, data) {
     return data.map(function(d) {
         var result = []
@@ -325,6 +371,19 @@
 
     return averages
   }
+
+  function cleanSeason(season) {
+    return season.split('\xA0')[0]
+  }
+
+  function dataByDate(data) {
+    var result = {}
+    data.forEach(function(d) {
+      result[cleanSeason(d.info.season)] = d
+    })
+    return result
+  }
+
   // Build an array of objects from an HTML table
   //
   // table - d3 selection
@@ -334,8 +393,8 @@
     var multiHeader = table.selectAll('thead tr')[0].length > 1;
     var dateidx = null,
         headers = table.selectAll('thead tr:not(.over_header) th'),
-        rows    = table.selectAll('tbody tr'),
-        data    = []
+        rows = table.selectAll('tbody tr'),
+        data = []
 
     headers.each(function(el, idx) {
       var lbl = this.innerText.toLowerCase();
@@ -379,7 +438,7 @@
 
           obj[label] = val
         } else if (INFO_TYPES.indexOf(label) != -1) {
-          if (typeof obj.info == "undefined") obj.info = {}
+          if (typeof obj.info == 'undefined') obj.info = {}
           if (label == 'date') val = format.parse(val)
           obj.info[label] = val
         }

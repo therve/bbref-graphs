@@ -6,7 +6,7 @@
   "content_scripts": [
     {
       "matches": ["http://www.basketball-reference.com/*"],
-      "js": ["d3.min.js", "index.js"],
+      "js": ["d3.min.js", "jquery.min.js", "typeahead.bundle.min.js", "index.js"],
       "css": ["index.css"],
       "run_at": "document_end"
     }
