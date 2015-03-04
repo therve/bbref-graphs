@@ -146,6 +146,7 @@
         subject.text(stats[0].toUpperCase())
         vis.selectAll('g.bar').remove()
         vis.selectAll('path.average').style('display', 'None')
+        vis.selectAll('.y.axis').style('display', 'None')
 
         var bargroups = vis.selectAll('g.bar')
           .data(entries)
@@ -168,7 +169,9 @@
           } else {
               y.domain([Math.min(0, min), max * 1.1])
           }
-          vis.select('.y.axis.chart' + idx).call(yAxis)
+          vis.select('.y.axis.chart' + idx)
+            .style('display', '')
+            .call(yAxis)
 
           rect = g.append('rect')
             .attr('class', 'chart' + idx)
