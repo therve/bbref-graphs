@@ -209,7 +209,8 @@
         vis.selectAll('.x.axis text')
           .attr('transform', 'translate(' + -(x.rangeBand()/4 + 10) + ',30), rotate(-65)')
           .attr('text-anchor', 'end')
-        if (stats.length == 2 && stats[0] == stats[1] && th != null) {
+        var sameStat = stats.length == 2 && stats[0] == stats[1]
+        if (sameStat && th != null) {
           subject.text(stats[0].toUpperCase() + " VS " + th.typeahead('val'))
         } else {
           subject.text(stats.join(' / ').toUpperCase())
@@ -228,20 +229,31 @@
         stats.forEach(function(stat, idx) {
           idx = idx + 1
 
-          var max = d3.max(entries, function(d) { return d[idx] }),
-              min = d3.min(entries, function(d) { return d[idx] })
+          var max,
+              min,
               y = ys[idx - 1],
               yAxis = yAxes[idx - 1],
               averages = rollingAverageForStat(entries, idx)
+
+          if (sameStat) {
+             max = d3.max(entries, function(d) { return d3.max(d.slice(1)) }),
+             min = d3.min(entries, function(d) { return d3.max(d.slice(1)) })
+          } else {
+             max = d3.max(entries, function(d) { return d[idx] }),
+             min = d3.min(entries, function(d) { return d[idx] })
+          }
 
           if (stat.indexOf('%') != -1 && max == 100) {
               y.domain([Math.min(0, min), max])
           } else {
               y.domain([Math.min(0, min), max * 1.1])
           }
-          vis.select('.y.axis.chart' + idx)
-            .style('display', '')
-            .call(yAxis)
+
+          if (!sameStat || idx == 1) {
+            vis.select('.y.axis.chart' + idx)
+              .style('display', '')
+              .call(yAxis)
+          }
 
           rect = g.append('rect')
             .attr('class', 'chart' + idx)
