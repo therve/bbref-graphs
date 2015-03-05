@@ -101,7 +101,7 @@ players.initialize();
         h3.append('input')
           .attr('type', 'text')
           .attr('class', 'graph-typeahead')
-          .attr('placeholder', 'Compare')
+          .attr('placeholder', 'Compare...')
         .style('float', 'right')
 
         var th = $('.graph-typeahead').typeahead(null, {

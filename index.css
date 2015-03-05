@@ -86,3 +86,19 @@ svg.bbref-chart .average.chart2 {
 .graph h3 .stat-label {
    margin: 0 10px;
 }
+
+.graph .twitter-typeahead {
+   float: right;
+   margin-left: 10px;
+}
+
+.graph .twitter-typeahead input {
+   padding: 0.1em;
+   font-size: 90%;
+   width: 150px;
+}
+
+.graph .tt-dropdown-menu {
+   margin-top: 0;
+   width: 250px;
+}
