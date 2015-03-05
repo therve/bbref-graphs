@@ -1,7 +1,7 @@
 {
   "name": "Basketball Reference Extensions",
-  "version": "0.3",
-  "manifest_version": 3,
+  "version": "0.4",
+  "manifest_version": 4,
   "description": "Visualization for basketball-reference.com",
   "content_scripts": [
     {
