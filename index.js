@@ -280,11 +280,25 @@
             }))
 
           if (entries.length > 40) {
-            bargroups.select('text.chart'+ idx)
+            bargroups.select('text.chart' + idx)
               .attr('transform', 'rotate(-90)')
               .attr('text-anchor', 'start')
               .attr('x', bind(function(d) { return isNaN(y(d[idx])) ? 0 : -y(d[idx]) + 5 }))
               .attr('y', (x.rangeBand() + stats.length) / (1.5 * stats.length) + x.rangeBand() * (idx -1) / 2 + 2 * idx)
+            if (stats.length == 2) {
+              bargroups.select('text.chart' + idx)
+                .style('display', 'none')
+
+              bargroups.select('rect.chart' + idx)
+                .on('mouseover', function() {
+                  d3.select(this.nextSibling)
+                   .style('display', '')
+                })
+                .on('mouseout', function() {
+                  d3.select(this.nextSibling)
+                   .style('display', 'none')
+                })
+            }
           } else {
             bargroups.select('text.chart' + idx)
               .attr('y', bind(function(d) { return isNaN(y(d[idx])) ? 0 : y(d[idx]) - 5 }))
