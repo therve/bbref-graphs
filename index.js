@@ -288,7 +288,7 @@
       select.on('change', function(event) {
         statKeys[0] = this.options[this.selectedIndex].text
         var stats = [statKeys[0]]
-        if (statKeys[1] != NO_KEY) {
+        if (statKeys[1] != NO_KEY && statKeys[0] != statKeys[1]) {
            stats.push(statKeys[1])
         }
         curData = filterStats(stats, data)
@@ -298,7 +298,7 @@
 
       subSelect.on('change', function(event) {
         statKeys[1] = this.options[this.selectedIndex].text
-        if (statKeys[1] != NO_KEY) {
+        if (statKeys[1] != NO_KEY && statKeys[0] != statKeys[1]) {
           curData = filterStats(statKeys, data)
           render(statKeys, curData)
         } else {
