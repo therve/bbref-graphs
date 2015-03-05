@@ -24,16 +24,16 @@
     return Function.prototype.bind.apply(func, [].slice.call(arguments, 1))
   }
 
-var players = new Bloodhound({
-  datumTokenizer: Bloodhound.tokenizers.obj.whitespace('v'),
-  queryTokenizer: Bloodhound.tokenizers.whitespace,
-  limit: 10,
-  prefetch: {
-    url: '/inc/players_search_list.json',
-  }
-});
+  var players = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.obj.whitespace('v'),
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    limit: 10,
+    prefetch: {
+      url: '/inc/players_search_list.json',
+    }
+  })
 
-players.initialize();
+  players.initialize()
 
   var format = d3.time.format('%Y-%m-%d')
 
@@ -44,7 +44,9 @@ players.initialize();
   function showChart(container, table) {
     var width = table.node().offsetWidth,
         height = 400,
-        containerId = container.attr('id')
+        containerId = container.attr('id'),
+        playersDataCache = {},
+        currentPlayer = null
 
     if (table.node().querySelectorAll('tbody tr').length > 60)
       width = 1168
@@ -98,28 +100,50 @@ players.initialize();
         .attr('class', 'subject')
 
       if (curData[0][0].season != undefined) {
-        h3.append('input')
+        var cb = $(h3.append('input')
+          .attr('type', 'checkbox')
+          .attr('class', 'graph-matcher')[0][0])
+
+        var th = $(h3.append('input')
           .attr('type', 'text')
           .attr('class', 'graph-typeahead')
           .attr('placeholder', 'Compare...')
-        .style('float', 'right')
+          .style('float', 'right')[0][0])
 
-        var th = $('.graph-typeahead').typeahead(null, {
+        cb.change(function() {
+          if (!currentPlayer) {
+            return
+          }
+          var otherData = playersDataCache[currentPlayer]
+          curData = combineData(statKeys[0], data, otherData, !this.checked)
+          render([statKeys[0], statKeys[0]], curData)
+        })
+
+        th.typeahead(null, {
            name: 'player',
            displayKey: 'v',
            source: players.ttAdapter()
         })
+
         th.bind('typeahead:selected', function(evt, obj) {
-           var url = '/players/' + obj.i[0] + '/' + obj.i + '.html'
-           $.ajax({
-             url: url,
-             success: function(pageData) {
-                var other = $('<div/>').append(pageData).find('#' + containerId + ' .table_heading').get(0).parentNode
-                var otherData = toData(d3.select(other))
-                var combinedEntries = combineData(statKeys[0], data, otherData)
-                render([statKeys[0], statKeys[0]], combinedEntries)
-             }
-           })
+          if (playersDataCache[obj.i] != undefined) {
+            currentPlayer = obj.i
+            curData = combineData(statKeys[0], data, playersDataCache[obj.i], !cb.prop('checked'))
+            render([statKeys[0], statKeys[0]], curData)
+          } else {
+            var url = '/players/' + obj.i[0] + '/' + obj.i + '.html'
+            $.ajax({
+              url: url,
+              success: function(pageData) {
+                 var other = $('<div/>').append(pageData).find('#' + containerId + ' .table_heading').get(0).parentNode
+                 var otherData = toData(d3.select(other))
+                 playersDataCache[obj.i] = otherData
+                 currentPlayer = obj.i
+                 curData = combineData(statKeys[0], data, otherData, !cb.prop('checked'))
+                 render([statKeys[0], statKeys[0]], curData)
+              }
+            })
+          }
         })
       }
 
@@ -177,9 +201,12 @@ players.initialize();
       function render(stats, entries) {
 
         x.domain(d3.range(entries.length))
-        vis.select('.x.axis').call(xAxis)
+        vis.select('.x.axis')
+          .call(xAxis)
+          .selectAll(".tick text")
+          .call(wrap, 60);
         vis.selectAll('.x.axis text')
-          .attr('transform', 'translate(' + -((x.rangeBand() / 2) + 10) + ',30), rotate(-65)')
+          .attr('transform', 'translate(' + -(x.rangeBand()/4 + 10) + ',30), rotate(-65)')
           .attr('text-anchor', 'end')
         subject.text(stats.join(' / ').toUpperCase())
         vis.selectAll('g.bar').remove()
@@ -267,12 +294,12 @@ players.initialize();
       subSelect.on('change', function(event) {
         statKeys[1] = this.options[this.selectedIndex].text
         if (statKeys[1] != NO_KEY) {
-           curData = filterStats(statKeys, data)
-           render(statKeys, curData)
+          curData = filterStats(statKeys, data)
+          render(statKeys, curData)
         } else {
-           var stats = [statKeys[0]]
-           curData = filterStats(stats, data)
-           render(stats, curData)
+          var stats = [statKeys[0]]
+          curData = filterStats(stats, data)
+          render(stats, curData)
         }
       })
 
@@ -282,12 +309,26 @@ players.initialize();
     }
   }
 
-  function combineData(stat, data, otherData) {
-    var dataDate = dataByDate(otherData)
-    return data.map(function(d, idx) {
+  // matchDate: if true, match statistics by date
+  function combineData(stat, data, otherData, matchDate) {
+    if (matchDate) {
+      var dataDate = dataByDate(otherData)
+      return data.map(function(d) {
         var other = dataDate[cleanSeason(d.info.season)]
         return [d.info, d[stat], other != undefined ? other[stat] : NaN]
-    })
+      })
+    } else {
+      return data.map(function(d, idx) {
+        var other = otherData[idx]
+        if (other != undefined && other[stat] != undefined) {
+          var newInfo = {}
+          newInfo.season = d.info.season + " " + other.info.season
+          return [newInfo, d[stat], other[stat]]
+        } else {
+          return [d.info, d[stat], NaN]
+        }
+      })
+    }
   }
 
   function filterStats(stats, data) {
@@ -356,6 +397,30 @@ players.initialize();
     return val
   }
 
+  function wrap(text, width) {
+    text.each(function() {
+      var text = d3.select(this),
+          words = text.text().split(/\s+/).reverse(),
+          word,
+          line = [],
+          lineNumber = 0,
+          lineHeight = 1.1, // ems
+          y = text.attr("y"),
+          dy = parseFloat(text.attr("dy")),
+          tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+      while (word = words.pop()) {
+        line.push(word);
+        tspan.text(line.join(" "));
+        if (tspan.node().getComputedTextLength() > width) {
+          line.pop();
+          tspan.text(line.join(" "));
+          line = [word];
+          tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+        }
+      }
+    });
+  }
+
   function rollingAverageForStat(entries, idx) {
     var values = entries.map(function(d) { return d[idx] }),
         averages = [],
@@ -390,14 +455,14 @@ players.initialize();
   //
   // Returns an array or games [{game}, {game}, ...]
   function toData(table) {
-    var multiHeader = table.selectAll('thead tr')[0].length > 1;
+    var multiHeader = table.selectAll('thead tr')[0].length > 1
     var dateidx = null,
         headers = table.selectAll('thead tr:not(.over_header) th'),
         rows = table.selectAll('tbody tr'),
         data = []
 
     headers.each(function(el, idx) {
-      var lbl = this.innerText.toLowerCase();
+      var lbl = this.innerText.toLowerCase()
       if (lbl == 'date' || lbl == 'season')
         dateidx = idx + 1
     })
@@ -477,7 +542,7 @@ players.initialize();
     a.addEventListener('click', bind(onChartLinkClick, heading, a))
     heading.appendChild(a)
     if (activatedCharts.indexOf(heading.parentNode.getAttribute('id')) != -1 ){
-      a.click();
+      a.click()
     }
   }
 

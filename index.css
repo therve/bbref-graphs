@@ -111,3 +111,8 @@ svg.bbref-chart .average.chart2 {
 .graph .tt-suggestion:hover {
    cursor: pointer;
 }
+
+.graph input[type=checkbox] {
+   float: right;
+   margin: 5px 0 0 5px;
+}
