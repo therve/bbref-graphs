@@ -57,7 +57,7 @@
       var data = toData(table),
           name = d3.select('#page_content div.freeze_bar ul.menu span.bold_text').text(),
           stats = d3.keys(data[0]).filter(function(d) { return d != 'info' }),
-          padt = 30, padr = 10, padb = 70, padl = 20,
+          padt = 30, padr = 30, padb = 70, padl = 20,
           statKeys = [stats.indexOf('pts') != -1 ? 'pts' : 'mp', NO_KEY],
           curData = filterStats([statKeys[0]], data),
           x = d3.scale.ordinal().rangeRoundBands([0, width], 0.2),
@@ -253,6 +253,10 @@
             vis.select('.y.axis.chart' + idx)
               .style('display', '')
               .call(yAxis)
+          }
+          if (max >= 1000 && idx == 1) {
+            vis.select('.y.axis.chart' + idx)
+             .attr('transform', 'translate(15, 0)')
           }
 
           rect = g.append('rect')
