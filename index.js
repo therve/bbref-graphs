@@ -99,6 +99,7 @@
       var subject = h3.append('span')
         .attr('class', 'subject')
 
+      var th = null;
       if (curData[0][0].season != undefined) {
         var cb = $(h3.append('input')
           .attr('type', 'checkbox')
@@ -208,7 +209,11 @@
         vis.selectAll('.x.axis text')
           .attr('transform', 'translate(' + -(x.rangeBand()/4 + 10) + ',30), rotate(-65)')
           .attr('text-anchor', 'end')
-        subject.text(stats.join(' / ').toUpperCase())
+        if (stats.length == 2 && stats[0] == stats[1] && th != null) {
+          subject.text(stats[0].toUpperCase() + " VS " + th.typeahead('val'))
+        } else {
+          subject.text(stats.join(' / ').toUpperCase())
+        }
         vis.selectAll('g.bar').remove()
         vis.selectAll('path.average').style('display', 'None')
         vis.selectAll('.y.axis').style('display', 'None')
