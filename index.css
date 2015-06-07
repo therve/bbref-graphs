@@ -61,7 +61,7 @@ svg.bbref-chart .barlabel {
 }
 
 svg.bbref-chart .axis line {
-  stroke: #eee;
+  stroke: #ccc;
   stroke-width: 1px;
 }
 
@@ -81,6 +81,24 @@ svg.bbref-chart .average.chart1 {
 
 svg.bbref-chart .average.chart2 {
   stroke: blue;
+}
+
+svg.bbref-chart .score {
+  fill: none;
+  stroke-width: 1px;
+}
+
+svg.bbref-chart .score.chart1 {
+  stroke: green;
+}
+
+svg.bbref-chart .score.chart2 {
+  stroke: blue;
+}
+
+.graph .scoreboard {
+  padding: 0.5em;
+  border: 1px solid #444;
 }
 
 .graph h3 .stat-label {

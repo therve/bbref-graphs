@@ -48,10 +48,97 @@
         playersDataCache = {},
         currentPlayer = null
 
+    table.style('display', 'none')
+
+    if (window.location.pathname.startsWith('/boxscores/pbp/')) {
+      if (container.select('div.graph').node() == null) {
+        var data = toPBPData(table),
+          padt = 30, padr = 30, padb = 70, padl = 20,
+          x = d3.scale.linear().range([0, width - padl - padr]),
+          y = d3.scale.linear().range([height, 0]),
+          xAxis = d3.svg.axis().scale(x).tickSize(6).tickFormat(formatSeconds)
+          yAxis = d3.svg.axis().scale(y).orient('left').tickSize(-width + padl + padr).tickPadding(0)
+          bisectDate = d3.bisector(function(d) { return d[0] }).right;
+        console.log(data);
+        var paths = [
+          d3.svg.line()
+          .x(function(d) { return x(d[0])})
+          .y(function(d) { return y(d[1])}),
+          d3.svg.line()
+          .x(function(d) { return x(d[0])})
+          .y(function(d) { return y(d[2])})]
+
+        var div = container.insert('div', '.margin.padding')
+          .attr('class', 'graph')
+          .style('width', width + 'px')
+          .style('border', '1px solid #ccc')
+          .style('padding', '0')
+
+        var vis = div.append('svg')
+          .attr('class', 'bbref-chart')
+          .attr('width', width + padl + padr)
+          .attr('height', height + padt + padb)
+        .append('g')
+          .attr('transform', 'translate(' + padl + ',' + padt + ')')
+
+        vis.append('g')
+          .attr('class', 'y axis chart1')
+
+        vis.append('g')
+          .attr('class', 'x axis')
+          .attr('transform', 'translate(0,' + height + ')')
+
+        vis.append('path')
+          .attr('class', 'score chart1')
+        vis.append('path')
+          .attr('class', 'score chart2')
+
+        x.domain([0, data[data.length-1][0]])
+        y.domain([0, Math.max(data[data.length-1][1], data[data.length-1][2])])
+        vis.select('.x.axis')
+          .call(xAxis)
+        vis.select('.y.axis')
+          .call(yAxis)
+
+        vis.select('path.score.chart1')
+          .attr('d', paths[0](data))
+          .style('display', '')
+        vis.select('path.score.chart2')
+          .attr('d', paths[1](data))
+          .style('display', '')
+
+        var yLine = vis.append('line')
+          .attr('y1', 0)
+          .attr('y2', height)
+          .attr('stroke', '#444')
+          .style('display', 'none')
+
+        var yText = vis.append('text').attr('class', 'scoreboard').style('display', 'none')
+
+        div.on('mouseover', function() {
+            var coords = d3.mouse(this)
+            var current = data[bisectDate(data, x.invert(coords[0], 1))]
+            yLine.style('display', '').attr('transform', 'translate(' + coords[0] + ')')
+
+            yText.style('display', '').attr('dx', coords[0] + 8).attr('dy', coords[1])
+              .text(formatSeconds(current[0]) + ' ' + current[1] + '-' + current[2] + ' ' + current[3])
+            var ctLength = yText.node().getComputedTextLength()
+            if (ctLength + coords[0] > width) {
+               yText.attr('dx', coords[0] - ctLength - 8)
+            }
+          })
+          .on('mouseout', function() {
+            yLine.style('display', 'none')
+            yText.style('display', 'none')
+          })
+      } else {
+        container.select('div.graph').style('display', 'block')
+      }
+      return
+    }
+
     if (table.node().querySelectorAll('tbody tr').length > 60)
       width = 1168
-
-    table.style('display', 'none')
 
     if (container.select('div.graph').node() == null) {
       var data = toData(table),
@@ -204,14 +291,14 @@
         x.domain(d3.range(entries.length))
         vis.select('.x.axis')
           .call(xAxis)
-          .selectAll(".tick text")
+          .selectAll('.tick text')
           .call(wrap, 60);
         vis.selectAll('.x.axis text')
           .attr('transform', 'translate(' + -(x.rangeBand()/4 + 10) + ',30), rotate(-65)')
           .attr('text-anchor', 'end')
         var sameStat = stats.length == 2 && stats[0] == stats[1]
         if (sameStat && th != null) {
-          subject.text(stats[0].toUpperCase() + " VS " + th.typeahead('val'))
+          subject.text(stats[0].toUpperCase() + ' VS ' + th.typeahead('val'))
         } else {
           subject.text(stats.join(' / ').toUpperCase())
         }
@@ -357,7 +444,7 @@
         var other = otherData[idx]
         if (other != undefined && other[stat] != undefined) {
           var newInfo = {}
-          newInfo.season = d.info.season + " " + other.info.season
+          newInfo.season = d.info.season + ' ' + other.info.season
           return [newInfo, d[stat], other[stat]]
         } else {
           return [d.info, d[stat], NaN]
@@ -414,8 +501,11 @@
   }
 
   function minutesToDecimal(val) {
-    var mp = val.split(':').map(Number)
-    return parseFloat(d3.format('.2f')(((mp[0] * 60) + mp[1]) / 60))
+    var mp = val.split('.')[0].split(':').map(Number)
+    return mp[0] * 60 + mp[1]
+  }
+
+  function minutesToSeconds(val) {
   }
 
   function percentageToNumber(val) {
@@ -440,17 +530,17 @@
           line = [],
           lineNumber = 0,
           lineHeight = 1.1, // ems
-          y = text.attr("y"),
-          dy = parseFloat(text.attr("dy")),
-          tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+          y = text.attr('y'),
+          dy = parseFloat(text.attr('dy')),
+          tspan = text.text(null).append('tspan').attr('x', 0).attr('y', y).attr('dy', dy + 'em');
       while (word = words.pop()) {
         line.push(word);
-        tspan.text(line.join(" "));
+        tspan.text(line.join(' '));
         if (tspan.node().getComputedTextLength() > width) {
           line.pop();
-          tspan.text(line.join(" "));
+          tspan.text(line.join(' '));
           line = [word];
-          tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+          tspan = text.append('tspan').attr('x', 0).attr('y', y).attr('dy', ++lineNumber * lineHeight + dy + 'em').text(word);
         }
       }
     });
@@ -474,6 +564,10 @@
 
   function cleanSeason(season) {
     return season.split('\xA0')[0]
+  }
+
+  function formatSeconds(i) {
+    return d3.format('02d')(parseInt(i/60)) + ':' + d3.format('02d')(i % 60)
   }
 
   function dataByDate(data) {
@@ -549,6 +643,55 @@
     return data
   }
 
+  function toPBPData(table) {
+     var rows = table.selectAll('tbody tr'),
+         data = [],
+         score1 = 0,
+         score2 = 0,
+         elapsed = 0
+
+
+    rows.each(function() {
+      var cols = d3.select(this).selectAll('td')
+      if (cols.size() == 2) {
+        var dt = cols[0][0].innerText
+        if (dt == '0:00.0') {
+          if (elapsed >= 2880) {
+            elapsed += 300
+          } else {
+            elapsed += 720
+          }
+        }
+      }
+      if (cols.size() == 6) {
+        var dt = cols[0][0].innerText
+        if (elapsed >= 2880) {
+          dt = 300 - minutesToDecimal(dt) + elapsed
+        } else {
+          dt = 720 - minutesToDecimal(dt) + elapsed
+        }
+        if (cols[0][2].classList.contains('background_lime')) {
+          score1 += parseInt(cols[0][2].innerText)
+          if (data.length > 0 && data[data.length-1][0] == dt) {
+            data[data.length-1][1] = score1
+            data[data.length-1][3] = cols[0][1].innerText
+          } else {
+            data.push([dt, score1, score2, cols[0][1].innerText])
+          }
+        } else if (cols[0][4].classList.contains('background_lime')) {
+          score2 += parseInt(cols[0][4].innerText)
+          if (data.length > 0 && data[data.length-1][0] == dt) {
+            data[data.length-1][2] = score2
+            data[data.length-1][3] = cols[0][5].innerText
+          } else {
+            data.push([dt, score1, score2, cols[0][5].innerText])
+          }
+        }
+      }
+    })
+    return data
+  }
+
   var query = window.location.search.substring(1)
   var vars = query.split('&')
   var activatedCharts = []
@@ -564,7 +707,7 @@
     '#advanced_playoffs_div', '#all_totals', '#all_per_game', '#all_per_minute',
     '#all_per_poss', '#all_advanced', '#all_shooting', '#all_playoffs_totals',
     '#all_playoffs_per_game', '#all_playoffs_per_minute', '#all_playoffs_per_poss',
-    '#all_playoffs_advanced'
+    '#all_playoffs_advanced', '.clear_both'
   ]
   var selector = divList.map(function(x) { return x + ' .table_heading'}).join(', ')
   var headings = document.querySelectorAll(selector)
