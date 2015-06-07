@@ -58,7 +58,7 @@
           y = d3.scale.linear().range([height, 0]),
           xAxis = d3.svg.axis().scale(x).tickSize(6).tickFormat(formatSeconds)
           yAxis = d3.svg.axis().scale(y).orient('left').tickSize(-width + padl + padr).tickPadding(0)
-          bisectDate = d3.bisector(function(d) { return d[0] }).right;
+          bisectDate = d3.bisector(function(d) { return d[0] }).left;
         console.log(data);
         var paths = [
           d3.svg.line()
@@ -113,19 +113,15 @@
           .attr('stroke', '#444')
           .style('display', 'none')
 
-        var yText = vis.append('text').attr('class', 'scoreboard').style('display', 'none')
+        var yText = div.append('div').attr('class', 'scoreboard').style('display', 'none')
 
         div.on('mouseover', function() {
             var coords = d3.mouse(this)
             var current = data[bisectDate(data, x.invert(coords[0], 1))]
             yLine.style('display', '').attr('transform', 'translate(' + coords[0] + ')')
 
-            yText.style('display', '').attr('dx', coords[0] + 8).attr('dy', coords[1])
+            yText.style('display', '')
               .text(formatSeconds(current[0]) + ' ' + current[1] + '-' + current[2] + ' ' + current[3])
-            var ctLength = yText.node().getComputedTextLength()
-            if (ctLength + coords[0] > width) {
-               yText.attr('dx', coords[0] - ctLength - 8)
-            }
           })
           .on('mouseout', function() {
             yLine.style('display', 'none')
