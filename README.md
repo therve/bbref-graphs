@@ -6,7 +6,7 @@ This is a chrome extension for graphing [player statistics](http://www.basketbal
 
 ### Installation
 
-* [**Download v0.3 for Google Chrome**](https://github.com/therve/bbref-graphs/raw/master/bball-ref.crx)
+* [**Download v0.5 for Google Chrome**](https://github.com/therve/bbref-graphs/raw/master/bball-ref.crx)
 * In Chrome, navigate to `Window` > `Extensions`
 * Drag and drop the .crx file onto the Extensions page
 
@@ -18,6 +18,12 @@ This is a chrome extension for graphing [player statistics](http://www.basketbal
 ![](http://f.cl.ly/items/3n0O0Y042C112q0w120S/Screen%20Shot%202012-12-26%20at%201.27.17%20PM.png)
 
 ### Changelog
+
+#### v0.5 - June 7, 2015
+* Add play-by-play
+
+#### v0.4
+* Add player comparison
 
 #### v0.3 - March 5, 2015
 * Add multi graphs
